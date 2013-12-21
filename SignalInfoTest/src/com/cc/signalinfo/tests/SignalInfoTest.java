@@ -25,10 +25,21 @@ http://www.opensource.org/licenses/mit-license.php
 
 package com.cc.signalinfo.tests;
 
+import android.app.Activity;
+import android.content.Context;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.test.ActivityInstrumentationTestCase2;
-import com.cc.signalinfo.SignalInfo;
-import com.cc.signalinfo.util.SignalConstants;
+import com.cc.signalinfo.activities.MainActivity;
+import com.cc.signalinfo.config.AppSetup;
+import com.cc.signalinfo.enums.NetworkType;
+import com.cc.signalinfo.enums.Signal;
+import com.cc.signalinfo.util.SignalMapWrapper;
+import com.cc.signalinfo.listeners.SignalListener;
+import com.cc.signalinfo.signals.ISignal;
+import com.cc.signalinfo.util.SignalArrayWrapper;
 
+import java.util.EnumMap;
 import java.util.Map;
 
 /**
@@ -41,10 +52,19 @@ import java.util.Map;
  * -e class com.cc.signalinfo.SignalInfoTest \
  * com.cc.signalinfo.tests/android.test.InstrumentationTestRunner
  */
-public class SignalInfoTest extends ActivityInstrumentationTestCase2<SignalInfo>
+public class SignalInfoTest extends ActivityInstrumentationTestCase2<MainActivity> implements SignalListener.UpdateSignal
 {
+    private Activity                  activity;
+    private Map<NetworkType, ISignal> networkMap;
+    private SignalMapWrapper          signalMapWrapper;
     private String[] signalInfo = null;
+    private TelephonyManager   tm;
+    private SignalArrayWrapper signalArrayWrapper;
 
+    public SignalInfoTest()
+    {
+        super(MainActivity.class);
+    }
 
     @Override
     public void setUp() throws Exception
@@ -65,28 +85,52 @@ public class SignalInfoTest extends ActivityInstrumentationTestCase2<SignalInfo>
             "-75",
             "gsm|lte"
         };
+
+        activity = getActivity();
+        SignalListener listener = new SignalListener(this);
+        tm = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
+        tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        networkMap = new EnumMap<>(NetworkType.class);
     }
 
-    public SignalInfoTest()
+    public void testGetInstance() throws Exception
     {
-        super(SignalInfo.class);
+        assertNotNull("Test array was null. How the hell did that happen?? >:(", signalInfo);
     }
-
 
     /**
      * Tests that filtering bad signal values only filters what it should and nothing else
      */
     public void testFilterSignalData()
     {
-        Map<Integer, String> filteredSigInfo = SignalInfo.filterSignalData(signalInfo);
+        signalMapWrapper = signalArrayWrapper == null
+            ? new SignalMapWrapper(signalInfo, tm)
+            : new SignalMapWrapper(signalArrayWrapper.getFilteredArray(), tm);
 
-        for (int i = 0; i < filteredSigInfo.size(); ++i) {
-            if (i > 0 && i < 4) {
-                assertEquals("Value should be " + SignalConstants.DEFAULT_TXT, SignalConstants.DEFAULT_TXT, filteredSigInfo.get(i));
-            }
-            else {
-                assertEquals("Value should be " + signalInfo[i], signalInfo[i], filteredSigInfo.get(i));
+        networkMap = signalMapWrapper.getNetworkMap();
+        Signal[] values = Signal.values();
+
+        for (Map.Entry<NetworkType, ISignal> networkType : networkMap.entrySet()) {
+            for (int i = 1; i < signalInfo.length; ++i) {
+                if (i > 0 && i < 4) {
+                    assertEquals(
+                        String.format("Value should be %s", AppSetup.DEFAULT_TXT),
+                        AppSetup.DEFAULT_TXT,
+                        networkType.getValue().getSignalString(values[i]));
+                }
+                else {
+                    assertEquals(
+                        String.format("Value should be %s", signalInfo[i]),
+                        signalInfo[i],
+                        networkType.getValue().getSignalString(values[i]));
+                }
             }
         }
+    }
+
+    @Override
+    public void setData(SignalArrayWrapper signalArrayWrapper)
+    {
+        this.signalArrayWrapper = signalArrayWrapper;
     }
 }

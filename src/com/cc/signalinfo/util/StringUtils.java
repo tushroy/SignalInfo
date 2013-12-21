@@ -27,21 +27,25 @@
 
 package com.cc.signalinfo.util;
 
+import com.cc.signalinfo.config.AppSetup;
+
 /**
  * @author Wes Lanning
  * @version 2013-04-28
  */
-public class StringUtils
+public final class StringUtils
 {
+    private StringUtils() {}
+
     /**
      * Like C#'s isNullOrEmpty
      *
      * @param value - value to check for null or empty
      * @return true if null or empty
      */
-    public static boolean isNullOrEmpty(String value)
+    public static boolean isNullOrEmpty(CharSequence value)
     {
-        return value == null || value.isEmpty();
+        return value == null || isEmpty(value);
     }
 
     /**
@@ -61,5 +65,31 @@ public class StringUtils
             }
         }
         return true;
+    }
+
+    /**
+     * Returns <tt>true</tt> if, and only if, {@link #length()} is <tt>0</tt>.
+     *
+     * @return <tt>true</tt> if {@link #length()} is <tt>0</tt>, otherwise
+     *         <tt>false</tt>
+     *
+     * @since 1.6
+     */
+    public static boolean isEmpty(CharSequence value)
+    {
+        return value.length() == 0;
+    }
+
+    /**
+     * Compares two strings to determine if each is not
+     * null or empty as well as the same value (via equals())
+     *
+     * @param value - first value
+     * @param value2 - second value
+     * @return true if the strings are not null/empty and the same value
+     */
+    public static boolean safeEquals(CharSequence value, CharSequence value2)
+    {
+        return (!isNullOrEmpty(value) && !isNullOrEmpty(value2)) && value.equals(value2);
     }
 }

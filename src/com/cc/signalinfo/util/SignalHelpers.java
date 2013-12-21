@@ -28,21 +28,24 @@ package com.cc.signalinfo.util;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
-
-import static com.cc.signalinfo.util.SignalConstants.DEFAULT_TXT;
+import com.cc.signalinfo.config.AppSetup;
 
 /**
+ * The type Signal helpers.
+ *
  * @author Wes Lanning
  * @version 2012-12-21
  */
 public final class SignalHelpers
 {
-    private SignalHelpers() {}
+    private static final String TAG = SignalHelpers.class.getSimpleName();
 
     /**
      * Get the intent that launches the additional radio settings screen
      *
      * @return the intent for the settings area
+     *
+     * @throws SecurityException the security exception
      */
     public static Intent getAdditionalSettings() throws SecurityException
     {
@@ -61,24 +64,21 @@ public final class SignalHelpers
      */
     public static boolean userConsent(SharedPreferences settings)
     {
-        return !(!settings.contains(SignalConstants.PROMPT_SETTING)
-            || !settings.getBoolean(SignalConstants.PROMPT_SETTING, false));
+        return !(!settings.contains(AppSetup.PROMPT_SETTING)
+            || !settings.getBoolean(AppSetup.PROMPT_SETTING, false));
     }
 
     /**
-     * Checks to see if we have an rsrp and rsrq signal. If either
-     * is the DEFAULT_TXT set for the rsrp/rsrq or null, then we assume
-     * we can't calculate an estimated RSSI signal.
+     * Has lte api.
      *
-     * @param rsrp - the RSRP LTE signal
-     * @param rsrq - the RSRQ LTE signal
-     * @return true if RSSI possible, false if not
+     * @param settings the settings
+     * @return the boolean
      */
-    public static boolean hasLteRssi(String rsrp, String rsrq)
+    public static boolean hasLteApi(SharedPreferences settings)
     {
-        return rsrp != null
-            && rsrq != null
-            && !DEFAULT_TXT.equals(rsrp)
-            && !DEFAULT_TXT.equals(rsrq);
+        return !(!settings.contains(AppSetup.OLD_FUCKING_DEVICE)
+            || !settings.getBoolean(AppSetup.OLD_FUCKING_DEVICE, false));
     }
+
+    private SignalHelpers() {}
 }
