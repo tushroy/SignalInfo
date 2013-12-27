@@ -61,7 +61,7 @@ import com.google.ads.AdView;
 
 import java.util.*;
 
-import static com.cc.signalinfo.config.AppSetup.DEFAULT_TXT;
+import static com.cc.signalinfo.config.AppSetup.INVALID_TXT;
 
 /**
  * Not currently used because it's not really necessary (yet)
@@ -71,7 +71,7 @@ import static com.cc.signalinfo.config.AppSetup.DEFAULT_TXT;
 @SuppressWarnings("ReuseOfLocalVariable")
 public class SignalFragment extends SherlockFragment implements View.OnClickListener, SignalListener.UpdateSignal
 {
-    private final String                    TAG               = getClass().getSimpleName();
+    private final String                    TAG               = SignalFragment.class.getSimpleName();
     private       FragmentActivity          activity          = null;
     private       SignalListener            listener          = null;
     private       View                      rootView          = null;
@@ -90,7 +90,7 @@ public class SignalFragment extends SherlockFragment implements View.OnClickList
         sigInfoIds = getResources().obtainTypedArray(R.array.sigInfoIds);
         // sigInfoTitles = getResources().getStringArray(R.array.sigInfoTitles);
 
-        SignalListener listener = new SignalListener(this);
+        SignalListener listener = SignalListener.getInstance(this);
         tm = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         setPhoneInfo();
@@ -276,7 +276,7 @@ public class SignalFragment extends SherlockFragment implements View.OnClickList
                 ISignal signal = networkTypes.get(data.getKey().type());
                 String sigValue = signal.getSignalString(data.getKey());
 
-                if (!StringUtils.isNullOrEmpty(sigValue) && !DEFAULT_TXT.equals(sigValue)) {
+                if (!StringUtils.isNullOrEmpty(sigValue) && !INVALID_TXT.equals(sigValue)) {
   /*                  if (!menuItemStates.get(id.enable_db_readings)) {
                         sigValue = "";
                         unit = "";
@@ -291,7 +291,7 @@ public class SignalFragment extends SherlockFragment implements View.OnClickList
                         signalPercent));
                 }
             } catch (Resources.NotFoundException ignored) {
-                currentTextView.setText(DEFAULT_TXT);
+                currentTextView.setText(INVALID_TXT);
             }
         }
         setNetworkTypeText(); // update the network connection type
@@ -305,7 +305,7 @@ public class SignalFragment extends SherlockFragment implements View.OnClickList
             if (!view.isEnabled()) {
                 view.setEnabled(true);
                 view.setVisibility(View.VISIBLE);
-                view = rootView.findViewById(R.id.debugTbl);
+                view = rootView.findViewById(R.id.debugArray);
                 view.setEnabled(true);
                 view.setVisibility(View.VISIBLE);
             }

@@ -64,8 +64,7 @@ public final class SignalHelpers
      */
     public static boolean userConsent(SharedPreferences settings)
     {
-        return !(!settings.contains(AppSetup.PROMPT_SETTING)
-            || !settings.getBoolean(AppSetup.PROMPT_SETTING, false));
+        return settings.contains(AppSetup.PROMPT_SETTING) && settings.getBoolean(AppSetup.PROMPT_SETTING, false);
     }
 
     /**
@@ -76,8 +75,7 @@ public final class SignalHelpers
      */
     public static boolean hasLteApi(SharedPreferences settings)
     {
-        return !(!settings.contains(AppSetup.OLD_FUCKING_DEVICE)
-            || !settings.getBoolean(AppSetup.OLD_FUCKING_DEVICE, false));
+        return settings.contains(AppSetup.OLD_FUCKING_DEVICE) && settings.getBoolean(AppSetup.OLD_FUCKING_DEVICE, false);
     }
 
     private SignalHelpers() {}

@@ -30,6 +30,7 @@ package com.cc.signalinfo.listeners;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.util.Log;
+import com.cc.signalinfo.enums.Signal;
 import com.cc.signalinfo.util.SignalArrayWrapper;
 
 /**
@@ -39,14 +40,25 @@ public class SignalListener extends PhoneStateListener
 {
     private final String TAG = getClass().getSimpleName();
     private UpdateSignal listener;
+    private static SignalListener     instance      = null;
+    private        SignalArrayWrapper signalWrapper = null;
 
-    public SignalListener(UpdateSignal listener)
+    private SignalListener(UpdateSignal listener)
     {
         this.listener = listener;
+        signalWrapper = new SignalArrayWrapper("", listener);
     }
     /* TODO: think about making this a singleton if ever needed outside of just this file
        so we're not creating a bunch of telephony listeners
     */
+
+    public static synchronized SignalListener getInstance(UpdateSignal listener)
+    {
+        if (instance == null) {
+            instance = new SignalListener(listener);
+        }
+        return instance;
+    }
 
     /**
      * Get the Signal strength from the provider, each time there is an update
@@ -59,9 +71,9 @@ public class SignalListener extends PhoneStateListener
         super.onSignalStrengthsChanged(signalStrength);
 
         if (signalStrength != null) {
-            listener.setData(new SignalArrayWrapper(signalStrength));
             Log.d(TAG, "getting sig strength");
             Log.d(TAG, signalStrength.toString());
+            signalWrapper.filterSignals(signalStrength.toString());
         }
     }
 

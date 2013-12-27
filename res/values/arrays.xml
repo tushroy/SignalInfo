@@ -19,6 +19,7 @@
         <item>@string/lteSNR</item>
         <item>@string/lteCQI</item>
         <item>@string/lteRSSI</item>
+        <item>@string/gsmECIO</item>
         <item>@string/gsmRSSI</item>
     </string-array>
 
@@ -37,6 +38,7 @@
         <item>@id/lteSNR</item>
         <item>@id/lteCQI</item>
         <item>@id/lteRSSI</item>
+        <item>@id/gsmECIO</item>
         <item>@id/gsmRSSI</item>
     </array>
 

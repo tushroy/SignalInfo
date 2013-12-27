@@ -42,10 +42,10 @@ public class BaseActivity extends SherlockFragmentActivity
         actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
 
-        if (!BuildConfig.DEBUG) {
+/*        if (!BuildConfig.DEBUG) {
             AdView ad = (AdView) findViewById(R.id.adView);
             ad.loadAd(new AdRequest());
-        }
+        }*/
     }
 
     /**
@@ -56,8 +56,9 @@ public class BaseActivity extends SherlockFragmentActivity
      */
     protected void onCreate(int layout, Bundle savedInstanceState)
     {
-        this.onCreateApp(savedInstanceState);
         setContentView(layout);
+        this.onCreateApp(savedInstanceState);
+
         formatFooter();
     }
 

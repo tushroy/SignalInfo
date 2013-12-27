@@ -25,6 +25,7 @@ http://www.opensource.org/licenses/mit-license.php
 
 package com.cc.signalinfo.config;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.StrictMode;
 import com.cc.signalinfo.BuildConfig;
@@ -136,6 +137,13 @@ public final class AppSetup
     public static final int GSM_ASU = 16;
 
     /**
+     * Valid values are positive integers.  This value is the actual Ec/Io multiplied
+     * by -10.  Example: If the actual Ec/Io is -12.5 dB, then this response value
+     * will be 125. Range is 0 (best) to -160 (worst, though really goes to -200)
+     */
+    public static final int GSM_ECIO = 16;
+
+    /**
      * 0dB (best) to 31dB (highest) or 99dB (n/a).
      * Reference: TS 27.007 8.5
      */
@@ -229,7 +237,10 @@ public final class AppSetup
      * n/a here. see strings.xml#na
      */
     @NonNls
-    public static final String DEFAULT_TXT = "n/a";
+    public static final String INVALID_TXT = "n/a";
+
+    //Use int max, as -1 is a valid value in signal strength
+    public static final int INVALID = 0x7FFFFFFF;
 
     /**
      * GSM RSSI = Level index of CPICH Received Signal Code Power in UMTS
@@ -252,6 +263,7 @@ public final class AppSetup
     /**
      * Enable strict mode for the activity
      */
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     public static void enableStrictMode()
     {
         if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= 11) {

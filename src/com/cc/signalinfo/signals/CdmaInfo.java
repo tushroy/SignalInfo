@@ -61,8 +61,8 @@ public class CdmaInfo extends SignalInfo
     @Override
     public boolean enabled()
     {
-        return !StringUtils.isNullOrEmpty(signals[Signal.CDMA_RSSI])
-            || !StringUtils.isNullOrEmpty(signals[Signal.EVDO_RSSI]);
+        return !StringUtils.isNullOrEmpty(signals.get(Signal.CDMA_RSSI))
+            || !StringUtils.isNullOrEmpty(signals.get(Signal.EVDO_RSSI));
     }
 
     /**
@@ -76,14 +76,6 @@ public class CdmaInfo extends SignalInfo
     @Override
     public String addSignalValue(Signal type, String value)
     {
-        if (decibelsPreferred(type)) {
-            value = cb2db(value);
-        }
         return super.addSignalValue(type, value);
-    }
-
-    private boolean decibelsPreferred(Signal type)
-    {
-        return (type == Signal.CDMA_ECIO || type == Signal.EVDO_ECIO) && preferDb;
     }
 }

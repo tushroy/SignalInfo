@@ -31,10 +31,12 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 import com.cc.signalinfo.R;
+import com.cc.signalinfo.fragments.SettingsFragment;
 
 import java.util.List;
 
@@ -73,6 +75,18 @@ public class EditSettings extends SherlockPreferenceActivity
     public void onBuildHeaders(List<Header> target)
     {
         loadHeadersFromResource(R.xml.preference_headers, target);
+    }
+
+    /**
+     * Android 4.4+ requires this
+     *
+     * @param fragmentName - frag to validate
+     * @return true if valid
+     */
+    @Override
+    protected boolean isValidFragment(String fragmentName)
+    {
+        return SettingsFragment.class.getName().equals(fragmentName);
     }
 
     /**

@@ -37,26 +37,27 @@ public enum Signal implements SignalEnumMethods
     /*    NONE(0),*/
     GSM_SIG_STRENGTH(1, GSM, 31, 0, 0, 0),
     GSM_BIT_ERROR(2, GSM, 0, 7, 0, 0),
-    CDMA_RSSI(3, CDMA, 0, 80, -40, 20),
-    CDMA_ECIO(4, CDMA, 0, 160, 0, 20),
-    EVDO_RSSI(5, CDMA, 0, 80, -40, 20),
-    EVDO_ECIO(6, CDMA, 0, 160, 0, 20),
+    CDMA_RSSI(3, CDMA, 0, 80, -40, 1),
+    CDMA_ECIO(4, CDMA, 0, 16, 0, 1),
+    EVDO_RSSI(5, CDMA, 0, 80, -40, 1),
+    EVDO_ECIO(6, CDMA, 0, 16, 0, 1),
     EVDO_SNR(7, CDMA, 8, 0, 0, 0),
     LTE_SIG_STRENGTH(8, LTE, 31, 0, 0, 0),
-    LTE_RSRP(9, LTE, 0, 76, -44, 22),
+    LTE_RSRP(9, LTE, 0, 76, -44, 1),
     LTE_RSRQ(10, LTE, 0, 17, -3, 0),
-    LTE_SNR(11, LTE, 500, 0, 200, 0),
+    LTE_SNR(11, LTE, 0, 50, 20, 0),
     LTE_CQI(12, LTE, 15, 0, 0, 0),
-    LTE_RSSI(13, LTE, 0, 90, -30, 15),
-    GSM_RSSI(14, GSM, 0, 62, -51, 25),
-    GSM_ASU(15, GSM, 31, 0, 0, 0);
+    LTE_RSSI(13, LTE, 0, 80, -40, 1),
+    GSM_RSSI(14, GSM, 0, 62, -51, 1),
+    GSM_ECIO(15, GSM, 0, 16, 0, 1),
+    GSM_ASU(16, GSM, 31, 0, 0, 0);
 
     private       int         value;
     private       NetworkType networkType;
     private final int         best;
     private final int         worst;
     private       int         normalized;
-    private int fudged;
+    private       int         fudged;
 
     /**
      * Contains all the constants for the signal info
@@ -66,7 +67,7 @@ public enum Signal implements SignalEnumMethods
      * @param best - the optimal theoretical value for the signal
      * @param worst - the worst theoretical value for the signal
      * @param normalized - how much the reading should be subtracted for calculating %
-     * @param fudged - how much to subtract instead to make people feel better that their % is only like 63% when the reading is -60dBm lol
+     * @param fudged - how much to subtract instead to make people feel better that their % is only like 63% when the reading is -60dBm lol (not their faults, it's a screwy range based on theoretical readings)
      */
     Signal(int value, NetworkType networkType, int best, int worst, int normalized, int fudged)
     {

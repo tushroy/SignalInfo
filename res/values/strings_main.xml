@@ -44,6 +44,7 @@
     <string name="lteSNR">LTE SNR:</string>
     <string name="lteCQI">LTE CQI:</string>
     <string name="lteSigStrength">LTE Signal Strength:</string>
+    <string name="gsmECIO">GSM ECIO:</string>
     <string name="gsmRSSI">GSM RSSI:</string>
     <string name="gsmSigStrength">GSM Signal Strength:</string>
     <string name="gsmBitError">GSM Bit Error Rate:</string>

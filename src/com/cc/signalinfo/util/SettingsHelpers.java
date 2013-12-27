@@ -27,9 +27,11 @@
 
 package com.cc.signalinfo.util;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
 import java.util.Set;
@@ -171,6 +173,7 @@ public final class SettingsHelpers
      * @param defaultReturnValue the default return value if value doesn't exist
      * @return the preference
      */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static Set<String> getPreference(Activity activity, String preferenceName, Set<String> defaultReturnValue)
     {
         return getSharedPreferences(activity).getStringSet(preferenceName, defaultReturnValue);

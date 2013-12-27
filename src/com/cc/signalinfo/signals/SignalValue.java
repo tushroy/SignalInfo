@@ -1,5 +1,7 @@
 package com.cc.signalinfo.signals;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import com.cc.signalinfo.enums.NetworkType;
 import com.cc.signalinfo.enums.Signal;
 
@@ -49,6 +51,7 @@ public class SignalValue
         return resourceId;
     }
 
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
     public boolean enabled()
     {
         return !value.isEmpty();
