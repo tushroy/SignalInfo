@@ -36,6 +36,7 @@ import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Pair;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -51,6 +52,10 @@ import com.cc.signalinfo.util.SignalArrayWrapper;
 import com.cc.signalinfo.util.SignalHelpers;
 import com.cc.signalinfo.util.SignalMapWrapper;
 import com.cc.signalinfo.util.StringUtils;
+import com.cc.signalinfo.util.system.commands.Commands;
+import com.cc.signalinfo.util.system.commands.RootCommands;
+import com.cc.signalinfo.util.system.terminal.RootTerminal;
+import com.cc.signalinfo.util.system.terminal.TerminalBase;
 import com.commonsware.cwac.loaderex.acl.SharedPreferencesLoader;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,7 +75,12 @@ import static com.cc.signalinfo.config.AppSetup.INVALID_TXT;
  * @version 1.0
  */
 @SuppressWarnings({"RedundantFieldInitialization", "ReuseOfLocalVariable", "LawOfDemeter", "ClassTooDeepInInheritanceTree"})
-public class MainActivity extends BaseActivity implements OnClickListener, SignalListener.UpdateSignal, LoaderCallbacks<SharedPreferences>
+public class MainActivity
+    extends BaseActivity
+    implements OnClickListener,
+    SignalListener.UpdateSignal,
+    LoaderCallbacks<SharedPreferences>,
+    TerminalBase.CommandCallback
 {
     private static final String                TAG               = MainActivity.class.getSimpleName();
     private              boolean               dbOnly            = false;
@@ -82,6 +92,7 @@ public class MainActivity extends BaseActivity implements OnClickListener, Signa
     private              TypedArray            sigInfoIds        = null;
     private              Map<Signal, TextView> signalTextViewMap = new EnumMap<>(Signal.class);
     private              TelephonyManager      tm                = null;
+    private Commands commands = null;
 
     /**
      * Initialize the app.
@@ -92,12 +103,13 @@ public class MainActivity extends BaseActivity implements OnClickListener, Signa
     public void onCreate(Bundle savedInstanceState)
     {
         onCreate(R.layout.main, savedInstanceState);
-        SignalListener listener = SignalListener.getInstance(this);
+        SignalListener listener = new SignalListener(this);
         sigInfoIds = getResources().obtainTypedArray(R.array.sigInfoIds);
         tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        getSupportLoaderManager().initLoader(0, null, this);
+        this.commands = new RootCommands(new RootTerminal());
 
+        getSupportLoaderManager().initLoader(0, null, this);
         findViewById(R.id.additionalInfo).setOnClickListener(this);
         setPhoneInfo();
     }
@@ -170,13 +182,15 @@ public class MainActivity extends BaseActivity implements OnClickListener, Signa
             try {
                 startActivity(SignalHelpers.getAdditionalSettings());
             } catch (SecurityException | ActivityNotFoundException ignored) {
-                Toast.makeText(this,
-                    getString(R.string.noAdditionalSettingSupport),
-                    Toast.LENGTH_LONG).show();
+                // fallback for anyone that has root
+                commands.launchActivity(
+                    SignalHelpers.SETTINGS_INTENT.first,
+                    SignalHelpers.SETTINGS_INTENT.second);
             }
         }
         else {
-            new WarningDialogFragment().show(getSupportFragmentManager(), "Warning");
+            new WarningDialogFragment()
+                .show(getSupportFragmentManager(), getString(R.string.dialogWarningTitle));
         }
     }
 
@@ -218,6 +232,22 @@ public class MainActivity extends BaseActivity implements OnClickListener, Signa
     public void onLoaderReset(Loader<SharedPreferences> sharedPreferencesLoader)
     {
         // not used
+    }
+
+    /**
+     *
+     * @param executeResult - result of executing some commands (true if they all ran okay)
+     */
+    @Override
+    public void notifyCmdResult(Pair<Boolean, Map<String, String>> executeResult)
+    {
+        boolean executedOk = executeResult.first;
+
+        if (!executedOk) {
+            Toast.makeText(this,
+                getString(R.string.noAdditionalSettingSupport),
+                Toast.LENGTH_LONG).show();
+        }
     }
 
     /**

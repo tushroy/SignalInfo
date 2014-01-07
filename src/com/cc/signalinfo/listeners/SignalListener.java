@@ -43,21 +43,10 @@ public class SignalListener extends PhoneStateListener
     private static SignalListener     instance      = null;
     private        SignalArrayWrapper signalWrapper = null;
 
-    private SignalListener(UpdateSignal listener)
+    public SignalListener(UpdateSignal listener)
     {
         this.listener = listener;
-        signalWrapper = new SignalArrayWrapper("", listener);
-    }
-    /* TODO: think about making this a singleton if ever needed outside of just this file
-       so we're not creating a bunch of telephony listeners
-    */
 
-    public static synchronized SignalListener getInstance(UpdateSignal listener)
-    {
-        if (instance == null) {
-            instance = new SignalListener(listener);
-        }
-        return instance;
     }
 
     /**
@@ -73,7 +62,14 @@ public class SignalListener extends PhoneStateListener
         if (signalStrength != null) {
             Log.d(TAG, "getting sig strength");
             Log.d(TAG, signalStrength.toString());
-            signalWrapper.filterSignals(signalStrength.toString());
+
+            if (signalWrapper == null) {
+                signalWrapper = new SignalArrayWrapper(signalStrength.toString(), listener);
+
+            }
+            else {
+                signalWrapper.filterSignals(signalStrength.toString());
+            }
         }
     }
 

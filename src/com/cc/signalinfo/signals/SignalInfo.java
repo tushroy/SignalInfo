@@ -382,7 +382,11 @@ public abstract class SignalInfo implements ISignal
     public static String cb2db(String centibels)
     {
         if (!StringUtils.isNullOrEmpty(centibels) && !AppSetup.INVALID_TXT.equals(centibels)) {
-            centibels = String.valueOf((Integer.parseInt(centibels) / 10));
+            // Deal with weird bug showing up in Android where value may already be in decibels for SNR
+            // Happens on Verizon at least as of late, not sure why (yet).
+            centibels = centibels.length() > 3
+                ? String.valueOf((Integer.parseInt(centibels) / 10))
+                : centibels;
         }
         return centibels;
     }

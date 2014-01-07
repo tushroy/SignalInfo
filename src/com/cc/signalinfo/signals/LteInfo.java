@@ -1,6 +1,7 @@
 package com.cc.signalinfo.signals;
 
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import com.cc.signalinfo.enums.NetworkType;
 import com.cc.signalinfo.enums.Signal;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +22,8 @@ import static java.lang.Integer.parseInt;
  */
 public class LteInfo extends SignalInfo
 {
-    private static int RSSI_CONSTANT = 17;
+    private static final String TAG           = LteInfo.class.getSimpleName();
+    private static       int    RSSI_CONSTANT = 17;
 
     /**
      * Instantiates a new Lte info.
@@ -82,6 +84,9 @@ public class LteInfo extends SignalInfo
     @Override
     public String addSignalValue(Signal type, String value)
     {
+        if (type == Signal.LTE_SNR) {
+            Log.d(TAG, String.format("LTE LTE_SNR: %s", value));
+        }
         if (type == Signal.LTE_RSRQ && !safeEquals(value, INVALID_TXT)) {
             if (value.charAt(0) != '-') {
                 // RSRQ should always be negative, fuck you Qualcomm chipsets for typically ignoring this.

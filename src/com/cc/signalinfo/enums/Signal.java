@@ -47,7 +47,7 @@ public enum Signal implements SignalEnumMethods
     LTE_RSRQ(10, LTE, 0, 17, -3, 0),
     LTE_SNR(11, LTE, 0, 50, 20, 0),
     LTE_CQI(12, LTE, 15, 0, 0, 0),
-    LTE_RSSI(13, LTE, 0, 80, -40, 1),
+    LTE_RSSI(13, LTE, 0, 80, -40, 0),
     GSM_RSSI(14, GSM, 0, 62, -51, 1),
     GSM_ECIO(15, GSM, 0, 16, 0, 1),
     GSM_ASU(16, GSM, 31, 0, 0, 0);

@@ -87,7 +87,7 @@ public class SignalInfoTest extends ActivityInstrumentationTestCase2<MainActivit
         };
 
         activity = getActivity();
-        SignalListener listener = SignalListener.getInstance(this);
+        SignalListener listener = new SignalListener(this);
         tm = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         networkMap = new EnumMap<>(NetworkType.class);

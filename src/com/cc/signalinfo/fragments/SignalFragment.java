@@ -90,7 +90,7 @@ public class SignalFragment extends SherlockFragment implements View.OnClickList
         sigInfoIds = getResources().obtainTypedArray(R.array.sigInfoIds);
         // sigInfoTitles = getResources().getStringArray(R.array.sigInfoTitles);
 
-        SignalListener listener = SignalListener.getInstance(this);
+        SignalListener listener = new SignalListener(this);
         tm = (TelephonyManager) activity.getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         setPhoneInfo();

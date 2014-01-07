@@ -11,18 +11,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-                <com.google.ads.AdView
-                    android:id="@+id/adView"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@+id/deviceInfoGrid"
-                    ads:adSize="BANNER"
-                    ads:adUnitId="a150a0f996cbdbd" />
+        <com.google.ads.AdView
+            android:id="@+id/adView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/deviceInfoGrid"
+            ads:adSize="BANNER"
+            ads:adUnitId="a150a0f996cbdbd" />
 
         <android.support.v7.widget.GridLayout
             android:id="@+id/deviceInfoGrid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
             android:paddingEnd="10dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"

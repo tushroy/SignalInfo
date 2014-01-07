@@ -124,8 +124,8 @@ public class SignalMapWrapper
      * Maps the radio signal readings to corresponding network type.
      * Then returns the created map.
      *
-     * @param data - signal data to add to a map of network (key), signal reading (value) pairs
      * @param tm - dependency for the network map
+     * @param data - signal data to add to a map of network (key), signal reading (value) pairs
      * @return filtered data with "n/a" instead of the bad value
      */
     private Map<NetworkType, ISignal> createSignalDataMap(TelephonyManager tm, String[] data)

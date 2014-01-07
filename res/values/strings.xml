@@ -18,5 +18,7 @@
         displayed.
     </string>
 
+    <!-- Title to show on the warning dialog popup for the "advanced settings area" -->
+    <string name="dialogWarningTitle">Warning</string>
 
 </resources>

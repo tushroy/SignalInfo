@@ -80,9 +80,6 @@ public class SignalArrayWrapper
 
     public final void filterSignals(String signalArray)
     {
-        if (StringUtils.isNullOrEmpty(signalArray)) {
-            return;
-        }
         Log.d("Raw Signal Data", rawData);
         rawData = signalArray;
         FilterSignalTask task = new FilterSignalTask();
@@ -97,9 +94,7 @@ public class SignalArrayWrapper
      */
     public String[] getFilteredArray()
     {
-        return filteredArray.length > 0
-            ? Arrays.copyOf(filteredArray, filteredArray.length)
-            : filteredArray;
+        return Arrays.copyOf(filteredArray, filteredArray.length);
     }
 
     /**
@@ -135,12 +130,13 @@ public class SignalArrayWrapper
             // TODO: fix stupid devices like Huawai and LG that do LTE_RSSI = LTE_Signal_Strength
             String[] extendedSignalData = new String[ICS_BIG_ARRAY_SIZE];
             extendedSignalData = Arrays.copyOf(splitSignals, extendedSignalData.length);
-            Log.d("Extended Filtered Signal Data", java.util.Arrays.toString(extendedSignalData));
+
 
             if (splitSignals.length < extendedSignalData.length) {
                 // adjust array to account for devices that might have more readings than standard
                 java.util.Arrays.fill(extendedSignalData, splitSignals.length, extendedSignalData.length, AppSetup.INVALID_TXT);
             }
+            Log.d("Extended Filtered Signal Data", java.util.Arrays.toString(extendedSignalData));
 
             if (splitSignals.length == extendedSignalData.length || splitSignals.length == LEGACY_BIG_ARRAY_SIZE) {
                 // fucked up devices that don't implement any correct standard for the RIL
@@ -155,6 +151,7 @@ public class SignalArrayWrapper
                     extendedSignalData[i] = extendedSignalData[i + 1];
                     extendedSignalData[i + 1] = temp;
                 }
+                Log.d(TAG, "Device had extended signal data.");
             }
             Log.d("Filtered Signal Data", java.util.Arrays.toString(splitSignals));
             return new Object[]{extendedSignalData, listener};
