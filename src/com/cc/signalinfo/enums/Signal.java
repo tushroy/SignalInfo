@@ -34,7 +34,7 @@ import static com.cc.signalinfo.enums.NetworkType.*;
  */
 public enum Signal implements SignalEnumMethods
 {
-    /*    NONE(0),*/
+    // best, worst, normalized are in dB
     GSM_SIG_STRENGTH(0, GSM, 31, 0, 0, 0),
     GSM_BIT_ERROR(1, GSM, 0, 7, 0, 0),
     CDMA_RSSI(2, CDMA, 0, 80, -40, 1),
