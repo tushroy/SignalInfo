@@ -384,7 +384,9 @@ public abstract class SignalInfo implements ISignal
         if (!StringUtils.isNullOrEmpty(centibels) && !AppSetup.INVALID_TXT.equals(centibels)) {
             // Deal with weird bug showing up in Android where value may already be in decibels for SNR
             // Happens on Verizon at least as of late, not sure why (yet).
-            centibels = centibels.length() > 3
+            // tl;dr SNR shows up in decibel format already
+            centibels = (centibels.charAt(0) != '-' && centibels.length() > 2)
+                || (centibels.charAt(0) == '-' && centibels.length() > 3)
                 ? String.valueOf((Integer.parseInt(centibels) / 10))
                 : centibels;
         }

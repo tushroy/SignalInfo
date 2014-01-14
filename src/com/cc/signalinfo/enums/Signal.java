@@ -35,22 +35,22 @@ import static com.cc.signalinfo.enums.NetworkType.*;
 public enum Signal implements SignalEnumMethods
 {
     /*    NONE(0),*/
-    GSM_SIG_STRENGTH(1, GSM, 31, 0, 0, 0),
-    GSM_BIT_ERROR(2, GSM, 0, 7, 0, 0),
-    CDMA_RSSI(3, CDMA, 0, 80, -40, 1),
-    CDMA_ECIO(4, CDMA, 0, 16, 0, 1),
-    EVDO_RSSI(5, CDMA, 0, 80, -40, 1),
-    EVDO_ECIO(6, CDMA, 0, 16, 0, 1),
-    EVDO_SNR(7, CDMA, 8, 0, 0, 0),
-    LTE_SIG_STRENGTH(8, LTE, 31, 0, 0, 0),
-    LTE_RSRP(9, LTE, 0, 76, -44, 1),
-    LTE_RSRQ(10, LTE, 0, 17, -3, 0),
-    LTE_SNR(11, LTE, 0, 50, 20, 0),
-    LTE_CQI(12, LTE, 15, 0, 0, 0),
-    LTE_RSSI(13, LTE, 0, 80, -40, 0),
-    GSM_RSSI(14, GSM, 0, 62, -51, 1),
-    GSM_ECIO(15, GSM, 0, 16, 0, 1),
-    GSM_ASU(16, GSM, 31, 0, 0, 0);
+    GSM_SIG_STRENGTH(0, GSM, 31, 0, 0, 0),
+    GSM_BIT_ERROR(1, GSM, 0, 7, 0, 0),
+    CDMA_RSSI(2, CDMA, 0, 80, -40, 1),
+    CDMA_ECIO(3, CDMA, 0, 16, 0, 1),
+    EVDO_RSSI(4, CDMA, 0, 80, -40, 1),
+    EVDO_ECIO(5, CDMA, 0, 16, 0, 1),
+    EVDO_SNR(6, CDMA, 8, 0, 0, 0),
+    LTE_SIG_STRENGTH(7, LTE, 31, 0, 0, 0),
+    LTE_RSRP(8, LTE, 0, 76, -44, 1),
+    LTE_RSRQ(9, LTE, 0, 17, -3, 0),
+    LTE_SNR(10, LTE, 50, 0, 20, 0),
+    LTE_CQI(11, LTE, 15, 0, 0, 0),
+    LTE_RSSI(12, LTE, 0, 80, -40, 0),
+    GSM_RSSI(13, GSM, 0, 62, -51, 1),
+    GSM_ECIO(14, GSM, 0, 16, 0, 1);
+
 
     private       int         value;
     private       NetworkType networkType;

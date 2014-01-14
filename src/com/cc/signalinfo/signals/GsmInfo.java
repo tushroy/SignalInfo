@@ -28,7 +28,7 @@ public class GsmInfo extends SignalInfo
     {
         super(NetworkType.GSM, tm, signals);
         possibleValues =
-            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_ASU, Signal.GSM_BIT_ERROR, Signal.GSM_ECIO);
+            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_BIT_ERROR, Signal.GSM_ECIO);
     }
 
     /**
@@ -42,7 +42,7 @@ public class GsmInfo extends SignalInfo
     {
         super(NetworkType.GSM, tm, signals, preferDb);
         possibleValues =
-            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_ASU, Signal.GSM_BIT_ERROR, Signal.GSM_ECIO);
+            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_BIT_ERROR, Signal.GSM_ECIO);
     }
 
     /**

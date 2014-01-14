@@ -64,7 +64,7 @@ public class TerminalBase
      */
     protected TerminalBase()
     {
-        commandOutput = new LinkedHashMap<String, String>(10);
+        commandOutput = new LinkedHashMap<>(10);
         // default to plain old shell
         shellType = "sh";
     }
@@ -327,7 +327,7 @@ public class TerminalBase
             boolean success = (boolean) result[0];
             CommandCallback callback = (CommandCallback) result[1];
             // because I can't pass null directly and don't want to create an object
-            Map<String, String> noResults = new HashMap<>(0);
+            Map<String, String> noResults = null;
             callback.notifyCmdResult(Pair.create(success, noResults));
         }
     }

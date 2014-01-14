@@ -107,7 +107,7 @@ public class MainActivity
         sigInfoIds = getResources().obtainTypedArray(R.array.sigInfoIds);
         tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        this.commands = new RootCommands(new RootTerminal());
+        this.commands = new RootCommands(new RootTerminal(), this);
 
         getSupportLoaderManager().initLoader(0, null, this);
         findViewById(R.id.additionalInfo).setOnClickListener(this);
@@ -180,6 +180,7 @@ public class MainActivity
     {
         if (SignalHelpers.userConsent(getPreferences(Context.MODE_PRIVATE))) {
             try {
+              //  throw new SecurityException("fail");
                 startActivity(SignalHelpers.getAdditionalSettings());
             } catch (SecurityException | ActivityNotFoundException ignored) {
                 // fallback for anyone that has root

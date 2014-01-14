@@ -81,7 +81,6 @@ public class SignalArrayWrapper
     public final void filterSignals(String signalArray)
     {
         Log.d("Raw Signal Data", rawData);
-        rawData = signalArray;
         FilterSignalTask task = new FilterSignalTask();
         task.execute(signalArray, listener);
     }
@@ -138,7 +137,8 @@ public class SignalArrayWrapper
             }
             Log.d("Extended Filtered Signal Data", java.util.Arrays.toString(extendedSignalData));
 
-            if (splitSignals.length == extendedSignalData.length || splitSignals.length == LEGACY_BIG_ARRAY_SIZE) {
+            // not sure this is needed for crap devices so ignoring for now
+/*            if (splitSignals.length == extendedSignalData.length || splitSignals.length == LEGACY_BIG_ARRAY_SIZE) {
                 // fucked up devices that don't implement any correct standard for the RIL
                 // thankfully, it's only a handful of older devices made by LG and Huawei
 
@@ -146,13 +146,14 @@ public class SignalArrayWrapper
                     ? ICS_ARRAY_SIZE
                     : LEGACY_BIG_ARRAY_SIZE;
 
+
                 for (int i = 7; i < endPos - 1; ++i) {
                     String temp = extendedSignalData[i];
                     extendedSignalData[i] = extendedSignalData[i + 1];
                     extendedSignalData[i + 1] = temp;
                 }
                 Log.d(TAG, "Device had extended signal data.");
-            }
+            }*/
             Log.d("Filtered Signal Data", java.util.Arrays.toString(splitSignals));
             return new Object[]{extendedSignalData, listener};
         }
