@@ -64,10 +64,10 @@ public enum Signal implements SignalEnumMethods
      *
      * @param value - the index for the value
      * @param networkType - the type of network the signal is for
-     * @param best - the optimal theoretical value for the signal
-     * @param worst - the worst theoretical value for the signal
-     * @param normalized - how much the reading should be subtracted for calculating %
-     * @param fudged - how much to subtract instead to make people feel better that their % is only like 63% when the reading is -60dBm lol (not their faults, it's a screwy range based on theoretical readings)
+     * @param best - the optimal theoretical value for the signal in dB
+     * @param worst - the worst theoretical value for the signal in dB
+     * @param normalized - how much the reading should be subtracted for calculating % in dB
+     * @param fudged - should we pad the % result to make people feel better that their % is only like 63% when the reading is -60dBm lol (not their faults, it's a screwy range based on theoretical readings)
      */
     Signal(int value, NetworkType networkType, int best, int worst, int normalized, int fudged)
     {
