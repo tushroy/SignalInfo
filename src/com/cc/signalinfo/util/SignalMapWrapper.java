@@ -48,7 +48,7 @@ import java.util.Map;
  */
 public class SignalMapWrapper
 {
-    private Map<NetworkType, ISignal> networkMap;
+    private final Map<NetworkType, ISignal> networkMap;
 
     /**
      * @param filteredSignalData - signal data formatted for ICS+ compatibility
@@ -77,9 +77,9 @@ public class SignalMapWrapper
     private static Map<NetworkType, ISignal> initNetworkMap(TelephonyManager tm)
     {
         Map<NetworkType, ISignal> networkMap = new EnumMap<>(NetworkType.class);
-        networkMap[NetworkType.GSM] = new GsmInfo(tm);
-        networkMap[NetworkType.CDMA] = new CdmaInfo(tm);
-        networkMap[NetworkType.LTE] = new LteInfo(tm);
+        networkMap.put(NetworkType.CDMA, new CdmaInfo(tm));
+        networkMap.put(NetworkType.LTE, new LteInfo(tm));
+        networkMap.put(NetworkType.GSM, new GsmInfo(tm));
         return networkMap;
     }
 
@@ -124,8 +124,8 @@ public class SignalMapWrapper
      * Maps the radio signal readings to corresponding network type.
      * Then returns the created map.
      *
-     * @param data - signal data to add to a map of network (key), signal reading (value) pairs
      * @param tm - dependency for the network map
+     * @param data - signal data to add to a map of network (key), signal reading (value) pairs
      * @return filtered data with "n/a" instead of the bad value
      */
     private Map<NetworkType, ISignal> createSignalDataMap(TelephonyManager tm, String[] data)
@@ -136,13 +136,13 @@ public class SignalMapWrapper
         for (int i = 0; i < values.length; ++i) {
             String signalValue = i < data.length
                 ? data[i] :
-                AppSetup.DEFAULT_TXT;
-            networkMap[values[i].type()].addSignalValue(values[i], signalValue);
+                AppSetup.INVALID_TXT;
+            networkMap.get(values[i].type()).addSignalValue(values[i], signalValue);
         }
 
-        Log.d("Signal Map CDMA: ", networkMap[NetworkType.CDMA].getSignals().toString());
-        Log.d("Signal Map GSM: ", networkMap[NetworkType.GSM].getSignals().toString());
-        Log.d("Signal Map LTE: ", networkMap[NetworkType.LTE].getSignals().toString());
+        Log.d("Signal Map CDMA: ", networkMap.get(NetworkType.CDMA).getSignals().toString());
+        Log.d("Signal Map GSM: ", networkMap.get(NetworkType.GSM).getSignals().toString());
+        Log.d("Signal Map LTE: ", networkMap.get(NetworkType.LTE).getSignals().toString());
         return networkMap;
     }
 }

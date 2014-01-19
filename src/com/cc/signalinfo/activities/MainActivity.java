@@ -27,33 +27,24 @@ package com.cc.signalinfo.activities;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import com.cc.signalinfo.BuildConfig;
 import com.cc.signalinfo.R;
 import com.cc.signalinfo.dialogs.WarningDialogFragment;
 import com.cc.signalinfo.enums.NetworkType;
 import com.cc.signalinfo.enums.Signal;
-import com.cc.signalinfo.fragments.SettingsFragment;
 import com.cc.signalinfo.listeners.SignalListener;
 import com.cc.signalinfo.signals.ISignal;
 import com.cc.signalinfo.signals.SignalInfo;
@@ -61,14 +52,19 @@ import com.cc.signalinfo.util.SignalArrayWrapper;
 import com.cc.signalinfo.util.SignalHelpers;
 import com.cc.signalinfo.util.SignalMapWrapper;
 import com.cc.signalinfo.util.StringUtils;
+import com.cc.signalinfo.util.system.commands.Commands;
+import com.cc.signalinfo.util.system.commands.RootCommands;
+import com.cc.signalinfo.util.system.terminal.RootTerminal;
+import com.cc.signalinfo.util.system.terminal.TerminalBase;
 import com.commonsware.cwac.loaderex.acl.SharedPreferencesLoader;
-import com.google.ads.AdRequest;
-import com.google.ads.AdView;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
 
-import java.util.*;
-
-import static com.cc.signalinfo.config.AppSetup.DEFAULT_TXT;
-import static com.cc.signalinfo.config.AppSetup.enableStrictMode;
+import static android.support.v4.app.LoaderManager.LoaderCallbacks;
+import static android.view.View.OnClickListener;
+import static com.cc.signalinfo.config.AppSetup.INVALID_TXT;
 // ↑ Because the over verbosity on the constants will probably give me brain damage...
 
 /**
@@ -79,7 +75,12 @@ import static com.cc.signalinfo.config.AppSetup.enableStrictMode;
  * @version 1.0
  */
 @SuppressWarnings({"RedundantFieldInitialization", "ReuseOfLocalVariable", "LawOfDemeter", "ClassTooDeepInInheritanceTree"})
-public class MainActivity extends BaseActivity implements View.OnClickListener, SignalListener.UpdateSignal, LoaderManager.LoaderCallbacks<SharedPreferences>
+public class MainActivity
+    extends BaseActivity
+    implements OnClickListener,
+    SignalListener.UpdateSignal,
+    LoaderCallbacks<SharedPreferences>,
+    TerminalBase.CommandCallback
 {
     private static final String                TAG               = MainActivity.class.getSimpleName();
     private              boolean               dbOnly            = false;
@@ -91,6 +92,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     private              TypedArray            sigInfoIds        = null;
     private              Map<Signal, TextView> signalTextViewMap = new EnumMap<>(Signal.class);
     private              TelephonyManager      tm                = null;
+    private Commands commands = null;
 
     /**
      * Initialize the app.
@@ -105,8 +107,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         sigInfoIds = getResources().obtainTypedArray(R.array.sigInfoIds);
         tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tm.listen(listener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        getSupportLoaderManager().initLoader(0, null, this);
+        this.commands = new RootCommands(new RootTerminal(), this);
 
+        getSupportLoaderManager().initLoader(0, null, this);
         findViewById(R.id.additionalInfo).setOnClickListener(this);
         setPhoneInfo();
     }
@@ -129,7 +132,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
                 if (id != -1) {
                     TextView currentView = (TextView) findViewById(id);
-                    signalTextViewMap[values[i]] = currentView;
+                    signalTextViewMap.put(values[i], currentView);
                 }
             }
         }
@@ -177,15 +180,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     {
         if (SignalHelpers.userConsent(getPreferences(Context.MODE_PRIVATE))) {
             try {
+              //  throw new SecurityException("fail");
                 startActivity(SignalHelpers.getAdditionalSettings());
             } catch (SecurityException | ActivityNotFoundException ignored) {
-                Toast.makeText(this,
-                    getString(R.string.noAdditionalSettingSupport),
-                    Toast.LENGTH_LONG).show();
+                // fallback for anyone that has root
+                commands.launchActivity(
+                    SignalHelpers.SETTINGS_INTENT.first,
+                    SignalHelpers.SETTINGS_INTENT.second);
             }
         }
         else {
-            new WarningDialogFragment().show(getSupportFragmentManager(), "Warning");
+            new WarningDialogFragment()
+                .show(getSupportFragmentManager(), getString(R.string.dialogWarningTitle));
         }
     }
 
@@ -230,6 +236,22 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
     }
 
     /**
+     *
+     * @param executeResult - result of executing some commands (true if they all ran okay)
+     */
+    @Override
+    public void notifyCmdResult(Pair<Boolean, Map<String, String>> executeResult)
+    {
+        boolean executedOk = executeResult.first;
+
+        if (!executedOk) {
+            Toast.makeText(this,
+                getString(R.string.noAdditionalSettingSupport),
+                Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
      * Private façade that calls to real methods that display
      * the signal info on the screen
      *
@@ -240,7 +262,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
         SignalMapWrapper signalMapWrapper = new SignalMapWrapper(filteredSignals, tm);
 
         if (signalMapWrapper.hasData()) {
-            displaySignalInfo(signalMapWrapper);
+            DisplaySignalsTask task = new DisplaySignalsTask();
+            task.execute(filteredSignals);
+           // displaySignalInfo(signalMapWrapper);
         }
         else {
             Toast.makeText(this,
@@ -322,10 +346,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             // TODO: maybe use an adapter of some sort instead of this (ListAdapter maybe?)
             TextView currentTextView = data.getValue();
             try {
-                ISignal signal = networkTypes[data.getKey().type()];
+                ISignal signal = networkTypes.get(data.getKey().type());
                 String sigValue = signal.getSignalString(data.getKey());
 
-                if (!StringUtils.isNullOrEmpty(sigValue) && !DEFAULT_TXT.equals(sigValue)) {
+                if (!StringUtils.isNullOrEmpty(sigValue) && !INVALID_TXT.equals(sigValue)) {
                     // should be show the percentage along with the dBm?
                     String signalPercent = dbOnly
                         ? ""
@@ -337,7 +361,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                         signalPercent));
                 }
             } catch (Resources.NotFoundException ignored) {
-                currentTextView.setText(DEFAULT_TXT);
+                currentTextView.setText(INVALID_TXT);
             }
         }
         setNetworkTypeText(); // update the network connection type
@@ -356,7 +380,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
             if (!view.isEnabled()) {
                 view.setEnabled(true);
                 view.setVisibility(View.VISIBLE);
-                view = findViewById(R.id.debugTbl);
+                view = findViewById(R.id.debugArray);
                 view.setEnabled(true);
                 view.setVisibility(View.VISIBLE);
             }
@@ -372,6 +396,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                     Arrays.toString(debugInfo.getFilteredArray()),
                     debugMapRelative.toString(),
                     debugMapStrict.toString()));
+        }
+    }
+
+    private class DisplaySignalsTask extends AsyncTask<String, Void, SignalMapWrapper>
+    {
+        @Override
+        protected SignalMapWrapper doInBackground(String... signalStrength)
+        {
+            if (signalStrength == null) {
+                return null;
+            }
+            return new SignalMapWrapper(signalStrength, tm);
+        }
+
+        @Override
+        protected void onPostExecute(SignalMapWrapper result)
+        {
+            displaySignalInfo(result);
         }
     }
 }

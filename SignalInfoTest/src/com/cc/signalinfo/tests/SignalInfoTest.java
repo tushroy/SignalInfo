@@ -114,8 +114,8 @@ public class SignalInfoTest extends ActivityInstrumentationTestCase2<MainActivit
             for (int i = 1; i < signalInfo.length; ++i) {
                 if (i > 0 && i < 4) {
                     assertEquals(
-                        String.format("Value should be %s", AppSetup.DEFAULT_TXT),
-                        AppSetup.DEFAULT_TXT,
+                        String.format("Value should be %s", AppSetup.INVALID_TXT),
+                        AppSetup.INVALID_TXT,
                         networkType.getValue().getSignalString(values[i]));
                 }
                 else {

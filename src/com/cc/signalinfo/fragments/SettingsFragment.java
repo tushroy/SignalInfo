@@ -27,10 +27,10 @@
 
 package com.cc.signalinfo.fragments;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-import android.os.Bundle;
-import android.preference.PreferenceFragment;
+    import android.annotation.TargetApi;
+    import android.os.Build;
+    import android.os.Bundle;
+    import android.preference.PreferenceFragment;
 
 /**
  * On Android 3.0+ this fragment will load the appropriate

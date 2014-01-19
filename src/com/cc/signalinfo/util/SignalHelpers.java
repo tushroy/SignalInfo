@@ -28,6 +28,7 @@ package com.cc.signalinfo.util;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Pair;
 import com.cc.signalinfo.config.AppSetup;
 
 /**
@@ -38,7 +39,10 @@ import com.cc.signalinfo.config.AppSetup;
  */
 public final class SignalHelpers
 {
-    private static final String TAG = SignalHelpers.class.getSimpleName();
+    private static final String               TAG             = SignalHelpers.class.getSimpleName();
+    public static final  String               INTENT_ACTION   = "android.intent.action.MAIN";
+    public static final  Pair<String, String> SETTINGS_INTENT =
+        Pair.create("com.android.settings", "TestingSettings");
 
     /**
      * Get the intent that launches the additional radio settings screen
@@ -51,7 +55,10 @@ public final class SignalHelpers
     {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         ComponentName showSettings = new ComponentName(
-            "com.android.settings", "com.android.settings.TestingSettings");
+            SETTINGS_INTENT.first,
+            String.format("%s.%s",
+                SETTINGS_INTENT.first,
+                SETTINGS_INTENT.second));
         return intent.setComponent(showSettings);
     }
 
@@ -64,8 +71,7 @@ public final class SignalHelpers
      */
     public static boolean userConsent(SharedPreferences settings)
     {
-        return !(!settings.contains(AppSetup.PROMPT_SETTING)
-            || !settings.getBoolean(AppSetup.PROMPT_SETTING, false));
+        return settings.contains(AppSetup.PROMPT_SETTING) && settings.getBoolean(AppSetup.PROMPT_SETTING, false);
     }
 
     /**
@@ -76,8 +82,7 @@ public final class SignalHelpers
      */
     public static boolean hasLteApi(SharedPreferences settings)
     {
-        return !(!settings.contains(AppSetup.OLD_FUCKING_DEVICE)
-            || !settings.getBoolean(AppSetup.OLD_FUCKING_DEVICE, false));
+        return settings.contains(AppSetup.OLD_FUCKING_DEVICE) && settings.getBoolean(AppSetup.OLD_FUCKING_DEVICE, false);
     }
 
     private SignalHelpers() {}

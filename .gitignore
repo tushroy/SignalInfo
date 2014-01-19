@@ -1,5 +1,4 @@
 /project.properties
-/SignalInfo.iml
 /signalInfo.mwb
 /signalInfo.mwb.bak
 /signalinfo.sql
@@ -28,3 +27,9 @@
 /SignalInfoTest/gen/Manifest.java
 /SignalInfoTest/bin
 /SignalInfoTest/gen
+
+/gridlayout/gen
+/gridlayout/local.properties
+/gridlayout/project.properties
+/gridlayout/ant.properties
+/gridlayout/build.xml

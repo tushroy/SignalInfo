@@ -5,6 +5,7 @@ import com.cc.signalinfo.config.AppSetup;
 import com.cc.signalinfo.enums.NetworkType;
 import com.cc.signalinfo.enums.Signal;
 import com.cc.signalinfo.util.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -23,11 +24,11 @@ public class GsmInfo extends SignalInfo
      * @param tm - instance of telephonyManager
      * @param signals the signals
      */
-    public GsmInfo(TelephonyManager tm, Map<Signal, String> signals)
+    public GsmInfo(TelephonyManager tm, @Nullable Map<Signal, String> signals)
     {
         super(NetworkType.GSM, tm, signals);
         possibleValues =
-            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_ASU, Signal.GSM_BIT_ERROR);
+            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_BIT_ERROR, Signal.GSM_ECIO);
     }
 
     /**
@@ -41,7 +42,7 @@ public class GsmInfo extends SignalInfo
     {
         super(NetworkType.GSM, tm, signals, preferDb);
         possibleValues =
-            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_ASU, Signal.GSM_BIT_ERROR);
+            EnumSet.of(Signal.GSM_SIG_STRENGTH, Signal.GSM_RSSI, Signal.GSM_BIT_ERROR, Signal.GSM_ECIO);
     }
 
     /**
@@ -56,15 +57,15 @@ public class GsmInfo extends SignalInfo
 
     /**
      * Checks to see if we have an rsrp and rsrq signal. If either
-     * is the DEFAULT_TXT set for the rsrp/rsrq or null, then we assume
+     * is the INVALID_TXT set for the rsrp/rsrq or null, then we assume
      * we can't calculate an estimated RSSI signal.
      *
      * @return true if RSSI possible, false if not
      */
     private boolean hasGsmRssi()
     {
-        return !StringUtils.isNullOrEmpty(signals[Signal.GSM_SIG_STRENGTH])
-            && !AppSetup.DEFAULT_TXT.equals(signals[Signal.GSM_SIG_STRENGTH]);
+        return !StringUtils.isNullOrEmpty(signals.get(Signal.GSM_SIG_STRENGTH))
+            && !AppSetup.INVALID_TXT.equals(signals.get(Signal.GSM_SIG_STRENGTH));
     }
 
     /**
@@ -74,7 +75,7 @@ public class GsmInfo extends SignalInfo
      */
     private int computeRssi()
     {
-        int gsmSignalStrength = Integer.parseInt(signals[Signal.GSM_SIG_STRENGTH]);
+        int gsmSignalStrength = Integer.parseInt(signals.get(Signal.GSM_SIG_STRENGTH));
         return -113 + (2 * gsmSignalStrength);
     }
 
@@ -93,7 +94,9 @@ public class GsmInfo extends SignalInfo
 
         // if we can now add RSSI, do. Have to manually calculate it though
         if (hasGsmRssi()) {
-            super.addSignalValue(Signal.GSM_RSSI, String.valueOf(computeRssi()));
+            int rssiVal = computeRssi();
+            String rssi = rssiVal == -99 ? AppSetup.INVALID_TXT : String.valueOf(rssiVal);
+            super.addSignalValue(Signal.GSM_RSSI, rssi);
         }
         return oldValue;
     }

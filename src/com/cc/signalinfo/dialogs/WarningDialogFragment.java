@@ -33,6 +33,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import com.cc.signalinfo.R;
@@ -45,6 +46,7 @@ import com.cc.signalinfo.util.SignalHelpers;
  */
 public class WarningDialogFragment extends DialogFragment
     implements DialogInterface.OnShowListener,
+
     DialogInterface.OnClickListener,
     CompoundButton.OnCheckedChangeListener
 {
@@ -98,7 +100,12 @@ public class WarningDialogFragment extends DialogFragment
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean checkState)
     {
-        ((AlertDialog) this.getDialog()).getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(checkState);
+        AlertDialog ad = ((AlertDialog) this.getDialog());
+        // workaround for https://code.google.com/p/android/issues/detail?id=6360
+        if (ad != null) {
+            ad.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(checkState);
+        }
+
         SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(AppSetup.PROMPT_SETTING, checkState).commit();

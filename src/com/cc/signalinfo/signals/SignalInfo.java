@@ -5,6 +5,8 @@ import com.cc.signalinfo.config.AppSetup;
 import com.cc.signalinfo.enums.NetworkType;
 import com.cc.signalinfo.enums.Signal;
 import com.cc.signalinfo.util.StringUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -16,7 +18,7 @@ import static android.telephony.TelephonyManager.*;
  * @author Wes Lanning
  * @version 2013 -04-29
  */
-@SuppressWarnings({"MethodWithMultipleReturnPoints", "OverlyComplexMethod", "SwitchStatementWithTooManyBranches"})
+@SuppressWarnings("OverlyComplexMethod")
 public abstract class SignalInfo implements ISignal
 {
     /**
@@ -30,7 +32,7 @@ public abstract class SignalInfo implements ISignal
     /**
      * The Possible values for the current network type
      */
-    protected EnumSet<Signal> possibleValues = EnumSet.noneOf(Signal.class);
+    protected Set<Signal> possibleValues = EnumSet.noneOf(Signal.class);
     /**
      * Holds all the signal values and key mappings for them
      */
@@ -51,7 +53,7 @@ public abstract class SignalInfo implements ISignal
      * @param tm - instance of telephonyManager
      * @param signals - the signals to add
      */
-    protected SignalInfo(NetworkType type, TelephonyManager tm, Map<Signal, String> signals)
+    protected SignalInfo(NetworkType type, TelephonyManager tm, @Nullable Map<Signal, String> signals)
     {
         this.type = type;
         this.tm = tm;
@@ -94,11 +96,10 @@ public abstract class SignalInfo implements ISignal
      * @param tm - instance of telephonyManager
      * @return the given name for the network type the device is using currently for data
      */
+    @SuppressWarnings({"MethodWithMultipleReturnPoints", "SwitchStatementWithTooManyBranches"})
     public static String getConnectedNetworkString(TelephonyManager tm)
     {
         switch (tm.getNetworkType()) {
-            case NETWORK_TYPE_UNKNOWN:
-                return "Unknown";
             case NETWORK_TYPE_CDMA:
                 return "CDMA";
             case NETWORK_TYPE_EDGE:
@@ -142,7 +143,7 @@ public abstract class SignalInfo implements ISignal
     @Override
     public String getSignalString(Signal signalType)
     {
-        return signals[signalType];
+        return signals.get(signalType);
     }
 
     /**
@@ -162,9 +163,9 @@ public abstract class SignalInfo implements ISignal
     public String getRelativeEfficiency(Signal name, boolean fudgeReading)
     {
         float signalValue =
-            AppSetup.DEFAULT_TXT.equals(signals[name])
+            AppSetup.INVALID_TXT.equals(signals.get(name))
                 ? -1
-                : Math.abs(Integer.parseInt(signals[name]));
+                : Math.abs(Integer.parseInt(signals.get(name)));
 
         if (signalValue == -1) {
             return ""; // no value set
@@ -203,7 +204,8 @@ public abstract class SignalInfo implements ISignal
         Map<String, String> readings = new LinkedHashMap<>();
 
         for (Map.Entry<Signal, String> signalReading : signals.entrySet()) {
-            readings[signalReading.getKey().name()] = getRelativeEfficiency(signalReading.getKey(), fudgeReading);
+            readings.put(signalReading.getKey().name(),
+                getRelativeEfficiency(signalReading.getKey(), fudgeReading));
         }
         return readings;
     }
@@ -307,7 +309,7 @@ public abstract class SignalInfo implements ISignal
             case PHONE_TYPE_GSM:
                 return "GSM Device";
             case PHONE_TYPE_CDMA:
-                return "GSM Device";
+                return "CDMA Device";
             case PHONE_TYPE_NONE:
                 return "No Cellular Radio";
             case PHONE_TYPE_SIP:
@@ -338,8 +340,8 @@ public abstract class SignalInfo implements ISignal
             signalNames.add(signal.getKey().name());
             signalValues.add(signal.getValue());
         }
-        signalSet[0] = signalNames;
-        signalSet[1] = signalValues;
+        signalSet.set(0, signalNames);
+        signalSet.set(1, signalValues);
         return signalSet;
     }
 
@@ -354,7 +356,10 @@ public abstract class SignalInfo implements ISignal
     @Override
     public String addSignalValue(Signal type, String value)
     {
-        return signals[type] = value;
+        if (decibelsPreferred(type)) {
+            value = cb2db(value);
+        }
+        return signals.put(type, value);
     }
 
     /**
@@ -376,9 +381,14 @@ public abstract class SignalInfo implements ISignal
      */
     public static String cb2db(String centibels)
     {
-        if (!StringUtils.isNullOrEmpty(centibels) && !AppSetup.DEFAULT_TXT.equals(centibels)) {
+        if (!StringUtils.isNullOrEmpty(centibels) && !AppSetup.INVALID_TXT.equals(centibels)) {
             centibels = String.valueOf((Integer.parseInt(centibels) / 10));
         }
         return centibels;
+    }
+
+    public boolean decibelsPreferred(Signal type)
+    {
+        return (type == Signal.CDMA_ECIO || type == Signal.EVDO_ECIO || type == Signal.LTE_SNR) && preferDb;
     }
 }

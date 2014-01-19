@@ -26,9 +26,13 @@
 
 package com.cc.signalinfo.util;
 
+import android.os.AsyncTask;
 import android.telephony.SignalStrength;
 import android.util.Log;
 import com.cc.signalinfo.config.AppSetup;
+import com.cc.signalinfo.listeners.SignalListener;
+
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -42,30 +46,24 @@ import java.util.regex.Pattern;
  */
 public class SignalArrayWrapper
 {
+    public static final  String[] EMPTY_SIGNAL_ARRAY    = new String[0];
     // filter out any readings matching this regex as they're invalid
-    private static final Pattern FILTER_SIGNAL  = Pattern.compile("0|-1|-?99|-?[1-9][0-9]{3,}");
-    // fallback for really shitty devices were we can't find the gsm string in the signal
-    private static final Pattern HAS_LETTERS    = Pattern.compile("[^\\d-\\s]+");
+    private static final Pattern  FILTER_INVALID_SIGNAL = Pattern.compile("-1\\b|-?99\\b|0x[\\d]+|-?[4-9][0-9]{3,}|-?[0-9]{4,}");
+    private static final Pattern  FILTER_NON_NUM        = Pattern.compile("\\s?[^- \\d]+", Pattern.CASE_INSENSITIVE);
     // the normal system size for signal readings on ics
-    private static final int     ICS_ARRAY_SIZE = 12;
-    private static final Pattern SPACE_STR      = Pattern.compile(" ");
-    // where in the signal string array is_gsm appears to remove it. It won't ever change so make it static
-    private static       int     gsmPos         = -1;
-    private String[] filteredArray;
+    private static final int      ICS_ARRAY_SIZE        = 12;
+    // some devices (looking at you Huawei) add GSM ECIO, LTE RSSI and GSM RSSI
+    private static final int      ICS_BIG_ARRAY_SIZE    = 14;
+    // old devices half assed the LTE RIL to have some stuff, but not all (looking at you LG pre ICS)
+    private static final int      LEGACY_BIG_ARRAY_SIZE = 10;
+    private static final Pattern  SPACE_STR             = Pattern.compile(" ");
+    private static final String   TAG                   = SignalArrayWrapper.class.getSimpleName();
     // keep a copy of the raw data for debugging purposes mostly
-    private String   rawData;
-
-    /**
-     * Wraps the raw signal data array produced by the system in order
-     * to return a uniform signal array that follows ICS+ standards.
-     *
-     * @param signalStrength - contains the raw signal info reported from the system
-     */
-    public SignalArrayWrapper(SignalStrength signalStrength)
-    {
-        rawData = signalStrength.toString();
-        filteredArray = processSignalInfo(signalStrength);
-    }
+    private String rawData;
+    private        String[]           filteredArray = EMPTY_SIGNAL_ARRAY;
+    private        FilterSignalTask   task          = null;
+    private static SignalArrayWrapper instance      = null;
+    private SignalListener.UpdateSignal listener;
 
     /**
      * Constructor mainly for testing (passing in a mock object
@@ -73,93 +71,18 @@ public class SignalArrayWrapper
      *
      * @param signalArray - contains the raw signal info reported from the system
      */
-    public SignalArrayWrapper(String[] signalArray)
+    public SignalArrayWrapper(String signalArray, SignalListener.UpdateSignal listener)
     {
-        rawData = java.util.Arrays.toString(signalArray);
-        filteredArray = processSignalInfo(signalArray);
+        rawData = signalArray;
+        this.listener = listener;
+        filterSignals(signalArray);
     }
 
-    /**
-     * Set the signal info the user sees.
-     *
-     * @param rawData - contains all the signal info
-     * @see android.telephony.SignalStrength for more info.
-     */
-    private static String[] processSignalInfo(String[] rawData)
+    public final void filterSignals(String signalArray)
     {
-        // ditch the text at the beginning and is_gsm at the end (because is_gsm is redundant with getNetworkType())
-        int endPos = findIsGsmPos(rawData);
-        String[] filteredData = new String[ICS_ARRAY_SIZE];
-
-        for (int i = 1; i <= filteredData.length; ++i) {
-            filteredData[i - 1] = i >= endPos || rawData[i] == null || FILTER_SIGNAL.matcher(rawData[i]).matches()
-                ? AppSetup.DEFAULT_TXT
-                : rawData[i];
-        }
-        Log.d("Raw Signal Array", java.util.Arrays.toString(rawData));
-        Log.d("Filtered Signal Array", java.util.Arrays.toString(rawData));
-        return filteredData;
-    }
-
-    /**
-     * Set the signal info the user sees.
-     *
-     * @param signalStrength - contains all the signal info
-     * @see android.telephony.SignalStrength for more info.
-     */
-    private static String[] processSignalInfo(SignalStrength signalStrength)
-    {
-        String[] splitSignals = SPACE_STR.split(signalStrength.toString());
-
-        if (splitSignals.length < 5) { // meaning they don't use spaces like they should be using...
-            // I could do this above with the space regex, but it's like 1-2 devices that somehow fuck this up and don't
-            // want to punish everyone for their idiot developers.
-            // could go and find what the most occuring non alpha-numeric char is, but if it isn't one of these, then screw em.
-            splitSignals = signalStrength.toString().split("[ .,|:]+");
-        }
-        return processSignalInfo(splitSignals);
-    }
-
-    /**
-     * Finds the position of the gsm|lte or cdma string in the array
-     *
-     * This is mainly for dealing with shitty old devices that don't have all the LTE API stuff.
-     * Since those devices will have less fields in their raw data array, we must account for that.
-     * Yes, it's not optimal to pretend they could have LTE by adding the values,
-     * but fuck these devices. Especially since it's possible for 2.3 and 2.2 devices to have LTE,
-     * which complicates things more. I prefer my sanity and letting them eat up a little more memory
-     * on their craptastic device than running more checks later on.
-     *
-     * If you own one of these devices and are reading this, forgive the rage, but
-     * things like this on Android frustrate the hell out of me and as a reader,
-     * I assume you are developmentally inclined and can commiserate.
-     *
-     * Also, a happy developer is a good a good developer :)
-     *
-     * @param signalArray - the array to search
-     * @return the position or -1 (not really possible) if not found
-     */
-    private static int findIsGsmPos(String[] signalArray)
-    {
-        // just assuming that some stupid OEM made the signalArray variable length -_-
-        // really stupid if they did, but who knows with some of that crap I see in Android
-        if (gsmPos == -1 || gsmPos > signalArray.length - 1) {
-            // assume this device sucks so bad, it couldn't find the gsm position and try to compensate
-            // by looking for anything not a number and assuming that's the value to stop on
-            for (int i = signalArray.length - 1; i >= 0; --i) {
-                if (HAS_LETTERS.matcher(signalArray[i]).matches()) {
-                    gsmPos = i;
-                    // return early to avoid going through all of the loop
-                    return i;
-                }
-            }
-            // assume this device sucks so bad, it couldn't find the gsm position and try to compensate
-            // this shouldn't happen, but I wouldn't count on it with the way some Android devices are...
-            gsmPos = gsmPos == -1 && signalArray.length - 1 > 0
-                ? signalArray.length - 1
-                : 0;
-        }
-        return gsmPos;
+        Log.d("Raw Signal Data", rawData);
+        FilterSignalTask task = new FilterSignalTask();
+        task.execute(signalArray, listener);
     }
 
     /**
@@ -182,5 +105,79 @@ public class SignalArrayWrapper
     public String getRawData()
     {
         return rawData;
+    }
+
+    private class FilterSignalTask extends AsyncTask<Object, Void, Object[]>
+    {
+        @Override
+        protected Object[] doInBackground(Object... params)
+        {
+            // remove all invalid signals and put in our default string instead to make life easier
+            String rawData = (String) params[0];
+            Log.d(TAG, String.format("rawData: %s", rawData));
+
+            SignalListener.UpdateSignal listener = (SignalListener.UpdateSignal) params[1];
+            String filteredData = FILTER_NON_NUM.matcher(rawData).replaceAll("").trim();
+            Log.d(TAG, String.format("filtered after 1st regex: %s", filteredData));
+
+            filteredData = FILTER_INVALID_SIGNAL.matcher(filteredData).replaceAll(AppSetup.INVALID_TXT);
+            Log.d(TAG, String.format("filtered after 2nd regex: %s", filteredData));
+
+            String[] splitSignals = SPACE_STR.split(filteredData);
+            Log.d(TAG, String.format("splitsignals: %s", java.util.Arrays.toString(splitSignals)));
+
+            // TODO: fix stupid devices like Huawai and LG that do LTE_RSSI = LTE_Signal_Strength
+            String[] extendedSignalData = new String[ICS_BIG_ARRAY_SIZE];
+            extendedSignalData = Arrays.copyOf(splitSignals, extendedSignalData.length);
+
+
+            if (splitSignals.length < extendedSignalData.length) {
+                // adjust array to account for devices that might have more readings than standard
+                java.util.Arrays.fill(extendedSignalData, splitSignals.length, extendedSignalData.length, AppSetup.INVALID_TXT);
+            }
+            Log.d("Extended Filtered Signal Data", java.util.Arrays.toString(extendedSignalData));
+
+            // not sure this is needed for crap devices so ignoring for now
+/*            if (splitSignals.length == extendedSignalData.length || splitSignals.length == LEGACY_BIG_ARRAY_SIZE) {
+                // fucked up devices that don't implement any correct standard for the RIL
+                // thankfully, it's only a handful of older devices made by LG and Huawei
+
+                int endPos = splitSignals.length == extendedSignalData.length
+                    ? ICS_ARRAY_SIZE
+                    : LEGACY_BIG_ARRAY_SIZE;
+
+
+                for (int i = 7; i < endPos - 1; ++i) {
+                    String temp = extendedSignalData[i];
+                    extendedSignalData[i] = extendedSignalData[i + 1];
+                    extendedSignalData[i + 1] = temp;
+                }
+                Log.d(TAG, "Device had extended signal data.");
+            }*/
+            Log.d("Filtered Signal Data", java.util.Arrays.toString(splitSignals));
+            return new Object[]{extendedSignalData, listener};
+        }
+
+        @Override
+        protected void onPostExecute(Object... result)
+        {
+            filteredArray = (String[]) result[0];
+            SignalListener.UpdateSignal listener = (SignalListener.UpdateSignal) result[1];
+            listener.setData(SignalArrayWrapper.this);
+        }
+    }
+
+    private static int[] processSignalInfo(CharSequence signalStrength)
+    {
+        Matcher signalMatches = FILTER_INVALID_SIGNAL.matcher(signalStrength);
+        int[] extendedSignalData = new int[ICS_BIG_ARRAY_SIZE];
+        int signalCount;
+
+        for (signalCount = 0; signalMatches.find(); ++signalCount) {
+            extendedSignalData[signalCount] = Integer.parseInt(signalMatches.group());
+        }
+        java.util.Arrays.fill(extendedSignalData, signalCount, extendedSignalData.length, AppSetup.INVALID);
+
+        return extendedSignalData;
     }
 }

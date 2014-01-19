@@ -55,6 +55,7 @@
     <string name="lteSigStrengthDescription">Current LTE signal strength reading</string>
     <string name="gsmSigStrengthDescription">Current GSM signal strength reading</string>
     <string name="gsmRssiDescription">Current GSM RSSI reading</string>
+    <string name="gsmEcioDescription">Current GSM ECIO reading</string>
     <string name="gsmBitErrorDescription">Current GSM bit error reading</string>
     <string name="debugInfoDescription">Debugging info area for development</string>
     <string name="debugArrayDescription">Selected debugging signal readings</string>

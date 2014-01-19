@@ -56,8 +56,9 @@ public class BaseActivity extends SherlockFragmentActivity
      */
     protected void onCreate(int layout, Bundle savedInstanceState)
     {
-        this.onCreateApp(savedInstanceState);
         setContentView(layout);
+        this.onCreateApp(savedInstanceState);
+
         formatFooter();
     }
 

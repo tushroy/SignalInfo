@@ -61,29 +61,7 @@ public class CdmaInfo extends SignalInfo
     @Override
     public boolean enabled()
     {
-        return !StringUtils.isNullOrEmpty(signals[Signal.CDMA_RSSI])
-            || !StringUtils.isNullOrEmpty(signals[Signal.EVDO_RSSI]);
-    }
-
-    /**
-     * Add a signal value to the current network type collection.
-     *
-     * @param type the type (like RSSI, RSRP, SNR, etc)
-     * @param value the value (the current reading from the tower for the signal)
-     * @return the value of any previous signal value with the
-     *         specified type or null if there was no signal already added.
-     */
-    @Override
-    public String addSignalValue(Signal type, String value)
-    {
-        if (decibelsPreferred(type)) {
-            value = cb2db(value);
-        }
-        return super.addSignalValue(type, value);
-    }
-
-    private boolean decibelsPreferred(Signal type)
-    {
-        return (type == Signal.CDMA_ECIO || type == Signal.EVDO_ECIO) && preferDb;
+        return !StringUtils.isNullOrEmpty(signals.get(Signal.CDMA_RSSI))
+            || !StringUtils.isNullOrEmpty(signals.get(Signal.EVDO_RSSI));
     }
 }
